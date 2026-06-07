@@ -270,11 +270,214 @@ const aiFeatures = [
   },
 ] as const;
 
-const allFeatures = [...features, ...aiFeatures];
+const supplementalFeatures = [
+  {
+    slug: "regulator-watchlist",
+    title: "Regulator Watchlist",
+    href: "/regulator-watchlist",
+    category: "Intelligence Layer",
+    icon: ShieldCheck,
+    summary: "Regulator Watchlist workspace for AI scoring, signal review, trend analytics, recommended actions, and reviewer feedback in Regulatory Change Impact Mapper.",
+    bullets: ["Regulator Watchlist queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Regulator Watchlist", value: "90", note: 'Active records' },
+      { label: 'Exceptions', value: "3", note: 'Need review' },
+      { label: 'Due Soon', value: "5", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "obligation-mapping",
+    title: "Obligation Mapping",
+    href: "/obligation-mapping",
+    category: "Compliance",
+    icon: Workflow,
+    summary: "Obligation Mapping workspace for regulatory obligations, control checks, evidence packets, deadlines, and audit-ready exports in Regulatory Change Impact Mapper.",
+    bullets: ["Obligation Mapping queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Obligation Mapping", value: "99", note: 'Active records' },
+      { label: 'Exceptions', value: "4", note: 'Need review' },
+      { label: 'Due Soon', value: "6", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "impact-assessment-board",
+    title: "Impact Assessment Board",
+    href: "/impact-assessment-board",
+    category: "Governance",
+    icon: BarChart3,
+    summary: "Impact Assessment Board workspace for approval routing, policy controls, ownership, exceptions, audit evidence, and management signoff in Regulatory Change Impact Mapper.",
+    bullets: ["Impact Assessment Board queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Impact Assessment Board", value: "108", note: 'Active records' },
+      { label: 'Exceptions', value: "5", note: 'Need review' },
+      { label: 'Due Soon', value: "7", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "control-change-tasks",
+    title: "Control Change Tasks",
+    href: "/control-change-tasks",
+    category: "Operations",
+    icon: ClipboardList,
+    summary: "Control Change Tasks workspace for intake queues, assignments, SLA tracking, exception handling, stakeholder updates, and closeout evidence in Regulatory Change Impact Mapper.",
+    bullets: ["Control Change Tasks queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Control Change Tasks", value: "117", note: 'Active records' },
+      { label: 'Exceptions', value: "6", note: 'Need review' },
+      { label: 'Due Soon', value: "8", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "policy-update-queue",
+    title: "Policy Update Queue",
+    href: "/policy-update-queue",
+    category: "Legal",
+    icon: CalendarCheck,
+    summary: "Policy Update Queue workspace for legal review, redlines, evidence requirements, approval history, and deadline controls in Regulatory Change Impact Mapper.",
+    bullets: ["Policy Update Queue queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Policy Update Queue", value: "126", note: 'Active records' },
+      { label: 'Exceptions', value: "7", note: 'Need review' },
+      { label: 'Due Soon', value: "9", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "evidence-linkage",
+    title: "Evidence Linkage",
+    href: "/evidence-linkage",
+    category: "Compliance",
+    icon: PackageCheck,
+    summary: "Evidence Linkage workspace for regulatory obligations, control checks, evidence packets, deadlines, and audit-ready exports in Regulatory Change Impact Mapper.",
+    bullets: ["Evidence Linkage queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Evidence Linkage", value: "135", note: 'Active records' },
+      { label: 'Exceptions', value: "3", note: 'Need review' },
+      { label: 'Due Soon', value: "10", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "deadline-calendar",
+    title: "Deadline Calendar",
+    href: "/deadline-calendar",
+    category: "Operations",
+    icon: Activity,
+    summary: "Deadline Calendar workspace for intake queues, assignments, SLA tracking, exception handling, stakeholder updates, and closeout evidence in Regulatory Change Impact Mapper.",
+    bullets: ["Deadline Calendar queue","Subfeature work items","Audit-ready output"],
+    metrics: [
+      { label: "Deadline Calendar", value: "144", note: 'Active records' },
+      { label: 'Exceptions', value: "4", note: 'Need review' },
+      { label: 'Due Soon', value: "11", note: 'Next 14 days' },
+    ],
+  }
+] as const;
+
+const productionPlatformFeatures = [
+  {
+    slug: "enterprise-identity-access",
+    title: "Enterprise Identity & Access",
+    href: "/enterprise-identity-access",
+    category: "Production Platform",
+    icon: ShieldCheck,
+    summary: "Enterprise Identity & Access workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Enterprise Identity & Access", value: "90", note: 'Active records' },
+      { label: 'Exceptions', value: "3", note: 'Need review' },
+      { label: 'Due Soon', value: "5", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "connector-operations-center",
+    title: "Connector Operations Center",
+    href: "/connector-operations-center",
+    category: "Production Platform",
+    icon: Workflow,
+    summary: "Connector Operations Center workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Connector Operations Center", value: "99", note: 'Active records' },
+      { label: 'Exceptions', value: "4", note: 'Need review' },
+      { label: 'Due Soon', value: "6", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "audit-export-center",
+    title: "Audit Export Center",
+    href: "/audit-export-center",
+    category: "Production Platform",
+    icon: BarChart3,
+    summary: "Audit Export Center workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Audit Export Center", value: "108", note: 'Active records' },
+      { label: 'Exceptions', value: "5", note: 'Need review' },
+      { label: 'Due Soon', value: "7", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "notification-delivery-ledger",
+    title: "Notification Delivery Ledger",
+    href: "/notification-delivery-ledger",
+    category: "Production Platform",
+    icon: ClipboardList,
+    summary: "Notification Delivery Ledger workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Notification Delivery Ledger", value: "117", note: 'Active records' },
+      { label: 'Exceptions', value: "6", note: 'Need review' },
+      { label: 'Due Soon', value: "8", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "observability-runbooks",
+    title: "Observability & Runbooks",
+    href: "/observability-runbooks",
+    category: "Production Platform",
+    icon: CalendarCheck,
+    summary: "Observability & Runbooks workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Observability & Runbooks", value: "126", note: 'Active records' },
+      { label: 'Exceptions', value: "7", note: 'Need review' },
+      { label: 'Due Soon', value: "9", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "release-test-harness",
+    title: "Release Test Harness",
+    href: "/release-test-harness",
+    category: "Production Platform",
+    icon: PackageCheck,
+    summary: "Release Test Harness workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Release Test Harness", value: "135", note: 'Active records' },
+      { label: 'Exceptions', value: "3", note: 'Need review' },
+      { label: 'Due Soon', value: "10", note: 'Next 14 days' },
+    ],
+  },
+  {
+    slug: "production-gap-workspace",
+    title: "Production Gap Workspace",
+    href: "/production-gap-workspace",
+    category: "Production Platform",
+    icon: Activity,
+    summary: "Production Gap Workspace workspace for domain workflows, approvals, evidence, and reporting in Regulatory Change Impact Mapper.",
+    bullets: ["Production controls","Evidence tracking","Launch readiness"],
+    metrics: [
+      { label: "Production Gap Workspace", value: "144", note: 'Active records' },
+      { label: 'Exceptions', value: "4", note: 'Need review' },
+      { label: 'Due Soon', value: "11", note: 'Next 14 days' },
+    ],
+  }
+] as const;
+
+const allFeatures = [...features, ...supplementalFeatures, ...productionPlatformFeatures, ...aiFeatures];
 
 export const primaryNav: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'All Features', href: '/features', icon: Blocks },
+  { label: 'Production Readiness', href: '/production-readiness', icon: ShieldCheck },
   { label: 'Documents', href: '/documents', icon: Files },
   { label: 'Source Tables', href: '/source-tables', icon: Database },
   { label: 'Profiles', href: '/profiles', icon: UserRound },
@@ -284,6 +487,8 @@ export const featureNav: NavItem[] = allFeatures.map((feature) => ({ label: feat
 export const featureCatalog: FeatureDefinition[] = allFeatures.map((feature) => ({ title: feature.title, href: feature.href, category: feature.category, summary: feature.summary, bullets: [...feature.bullets] }));
 
 export const featureFamilies = [
+  { name: 'Production Platform Controls', features: ['Enterprise Identity & Access', 'Connector Operations Center', 'Audit Export Center', 'Notification Delivery Ledger', 'Observability & Runbooks', 'Release Test Harness', 'Production Gap Workspace'] },
+  { name: "Regulatory Change Controls", features: ["Regulator Watchlist","Obligation Mapping","Impact Assessment Board","Control Change Tasks","Policy Update Queue","Evidence Linkage","Deadline Calendar"] },
   {
     "name": "Intake",
     "features": [
@@ -374,7 +579,7 @@ function toPage(feature: (typeof allFeatures)[number]): PageDefinition {
   };
 }
 
-export const pageRegistry: Record<string, PageDefinition> = Object.fromEntries(features.map((feature) => [feature.slug, toPage(feature)]));
+export const pageRegistry: Record<string, PageDefinition> = Object.fromEntries([...features, ...supplementalFeatures, ...productionPlatformFeatures].map((feature) => [feature.slug, toPage(feature)]));
 export const aiFeatureRegistry: Record<string, PageDefinition> = Object.fromEntries(aiFeatures.map((feature) => [feature.slug, toPage(feature)]));
 export const featureContexts: Record<string, FeatureContext> = Object.fromEntries(
   allFeatures.map((feature) => [
