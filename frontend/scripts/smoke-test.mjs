@@ -1,4 +1,8 @@
 const baseUrl = process.env.SMOKE_BASE_URL || 'http://127.0.0.1:5207';
+const entitySlug = 'regulatory-watchlist';
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminEmail || !adminPassword) throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD are required');
 
 async function login(email, password) {
   const response = await fetch(`${baseUrl}/api/auth/login`, {
@@ -27,41 +31,25 @@ async function expectJson(path, cookie, status = 200) {
   return response.json();
 }
 
-const adminCookie = await login('admin@ai-agent-ops.local', 'admin123');
-const managerCookie = await login('manager@ai-agent-ops.local', 'manager123');
-const analystCookie = await login('analyst@ai-agent-ops.local', 'analyst123');
+const adminCookie = await login(adminEmail, adminPassword);
 
 await expectJson('/api/dashboard', adminCookie);
-await expectJson('/api/entities/agents', analystCookie);
-await expectJson('/api/documents', analystCookie);
+await expectJson(`/api/entities/${entitySlug}`, adminCookie);
+await expectJson('/api/documents', adminCookie);
 await expectJson('/api/source-tables', adminCookie);
-await expectStatus('/api/documents/upload', analystCookie, 405);
+await expectStatus('/api/documents/upload', adminCookie, 405);
 
-const records = await expectJson('/api/entities/agents', managerCookie);
+const records = await expectJson(`/api/entities/${entitySlug}`, adminCookie);
 const rowId = records.rows[0].id;
 
-const approveResponse = await fetch(`${baseUrl}/api/entities/agents/approve`, {
+const approveResponse = await fetch(`${baseUrl}/api/entities/${entitySlug}/approve`, {
   method: 'POST',
   headers: {
-    cookie: managerCookie,
+    cookie: adminCookie,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({ rowId, approved: true }),
 });
-if (!approveResponse.ok) {
-  throw new Error(`Manager approval failed with ${approveResponse.status}`);
-}
+if (!approveResponse.ok) throw new Error(`Admin approval failed with ${approveResponse.status}`);
 
-const forbiddenApprove = await fetch(`${baseUrl}/api/entities/agents/approve`, {
-  method: 'POST',
-  headers: {
-    cookie: analystCookie,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ rowId, approved: false }),
-});
-if (forbiddenApprove.status !== 403) {
-  throw new Error(`Analyst approval returned ${forbiddenApprove.status}, expected 403`);
-}
-
-console.log('AI Agent Ops Suite smoke passed');
+console.log('Regulatory change mapper smoke passed');

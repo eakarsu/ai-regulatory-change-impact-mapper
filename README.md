@@ -22,4 +22,4 @@ cd ai-regulatory-change-impact-mapper/frontend
 npm run dev
 ```
 
-Demo login: `admin@reg-change.local` / `admin123`
+Development password login requires an explicitly provisioned PostgreSQL account. Production uses the configured OIDC provider; no passwords are embedded in source.
