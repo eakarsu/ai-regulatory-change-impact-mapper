@@ -54,8 +54,24 @@ export default function LoginPage() {
           </label>
           <button
             type="button"
-            onClick={() => { setEmail(process.env.NEXT_PUBLIC_DEMO_EMAIL || ''); setPassword(process.env.NEXT_PUBLIC_DEMO_PASSWORD || ''); }}
-            disabled={!process.env.NEXT_PUBLIC_DEMO_EMAIL || !process.env.NEXT_PUBLIC_DEMO_PASSWORD}
+            onClick={async () => {
+              const demoEmail = process.env.NEXT_PUBLIC_DEMO_EMAIL || '';
+              const demoPassword = process.env.NEXT_PUBLIC_DEMO_PASSWORD || '';
+              if (!demoEmail || !demoPassword) {
+                setError('Demo credentials are not configured.');
+                return;
+              }
+              setEmail(demoEmail);
+              setPassword(demoPassword);
+              setSubmitting(true);
+              const ok = await login(demoEmail, demoPassword);
+              setSubmitting(false);
+              if (!ok) {
+                setError('Invalid email or password.');
+                return;
+              }
+              router.push('/dashboard');
+            }}
             aria-label="Auto Fill Demo Credentials"
             style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
           >
