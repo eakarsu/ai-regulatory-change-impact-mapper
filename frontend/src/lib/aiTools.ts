@@ -45,7 +45,7 @@ const sourceTools = sourceSystems.slice(0, 4).map((source): AIToolDefinition => 
   signals: source.coverage,
 }));
 
-export const aiTools: AIToolDefinition[] = [
+const generatedAITools: AIToolDefinition[] = [
   {
     id: 'suite-assistant',
     title: 'Suite Assistant',
@@ -70,6 +70,8 @@ export const aiTools: AIToolDefinition[] = [
   ...sourceTools,
   ...sourceProjectTools,
 ];
+
+export const aiTools = generatedAITools.filter((tool, index, all) => all.findIndex(item => item.id === tool.id) === index);
 
 export function getAITool(toolId: string) {
   return aiTools.find((tool) => tool.id === toolId) ?? aiTools[0];

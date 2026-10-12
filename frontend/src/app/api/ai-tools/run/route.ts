@@ -1,50 +1,10 @@
+import { requestWorkbenchAI, persistWorkbenchResult, workbenchError } from '@/lib/WorkbenchAIRuntime';
 import { NextRequest, NextResponse } from 'next/server';
 import { aiTools, getAITool } from '@/lib/aiTools';
 import { appendAuditEntry } from '@/lib/auditStore';
 import { requireSession } from '@/lib/requestAuth';
 
-async function callConfiguredAI(system: string, prompt: string) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
-
-  const baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-  const response = await fetch(baseUrl + '/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.2,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error('AI provider returned ' + response.status);
-  }
-
-  const payload = await response.json();
-  return payload?.choices?.[0]?.message?.content as string | undefined;
-}
-
-function localResponse(toolTitle: string, prompt: string, signals: string[]) {
-  const trimmedPrompt = prompt.trim();
-  return [
-    toolTitle + ' response',
-    '',
-    'Summary: ' + trimmedPrompt.slice(0, 260) + (trimmedPrompt.length > 260 ? '...' : ''),
-    '',
-    'Recommended next actions:',
-    ...signals.slice(0, 4).map((signal, index) => String(index + 1) + '. Review ' + signal + ' and assign an owner.'),
-    String(Math.min(signals.length + 1, 5)) + '. Update the audit trail after the review is accepted.',
-  ].join('\n');
-}
+async function callConfiguredAI(system: string, prompt: string, signal: AbortSignal) { return requestWorkbenchAI(system, prompt, signal); }
 
 export async function GET(request: NextRequest) {
   const session = await requireSession(request);
@@ -61,24 +21,11 @@ export async function POST(request: NextRequest) {
   const input = body?.input?.trim() || tool.defaultPrompt;
   const system = 'You are ' + tool.title + '. Stay inside this suite workflow. Return concise operational guidance with risks, next actions, and audit notes.';
 
-  let response: string;
-  let provider = 'local-pilot';
   try {
-    const aiResponse = await callConfiguredAI(system, input);
-    response = aiResponse || localResponse(tool.title, input, tool.signals);
-    provider = aiResponse ? 'configured-ai' : provider;
-  } catch {
-    response = localResponse(tool.title, input, tool.signals);
-    provider = 'local-fallback';
-  }
-
-  await appendAuditEntry('AI Tools', ((session.firstName + ' ' + session.lastName).trim() || session.email) + ' ran ' + tool.title);
-
-  return NextResponse.json({
-    tool,
-    input,
-    response,
-    provider,
-    createdAt: new Date().toISOString(),
-  });
+    const ai = await requestWorkbenchAI(system, input, request.signal);
+    request.signal.throwIfAborted();
+    await appendAuditEntry('AI Tools', ((session.firstName + ' ' + session.lastName).trim() || session.email) + ' ran ' + tool.title);
+    request.signal.throwIfAborted();
+    return NextResponse.json({tool, input, response: ai.content, provider: 'openrouter', model: ai.model, providerReceipt: ai.providerReceipt, createdAt: new Date().toISOString()});
+  } catch (error) { const failure = workbenchError(error, request.signal); return NextResponse.json({error: failure.error}, {status: failure.status}); }
 }
