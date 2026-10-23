@@ -40,6 +40,35 @@ export default function EntityWorkspace({ slug, seed }: Props) {
   const [editingRow, setEditingRow] = useState(false);
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
   const dirty = useRef(false);
+  const [insights, setInsights] = useState<null | { aiGenerated: boolean; disclaimer: string; features: Array<{ feature: string; title: string; summary: string; metrics: Array<{ label: string; value: number }>; sections: Array<{ title: string; detail: string }>; actions: string[] }> }>(null);
+  const [tasks, setTasks] = useState<Array<{ id: string; title: string; status: string }>>([]);
+  const [taskTitle, setTaskTitle] = useState('');
+  async function downloadExport(format: 'csv' | 'json') {
+    const response = await fetch(`/api/entities/${slug}/export?format=${format}`);
+    if (!response.ok) return;
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = `${slug}.${format}`;
+    link.click(); URL.revokeObjectURL(url);
+  }
+  async function loadInsights() {
+    const response = await fetch(`/api/ai/insights?slug=${encodeURIComponent(slug)}`);
+    if (response.ok) setInsights(await response.json());
+  }
+  async function loadTasks() {
+    const response = await fetch('/api/tasks');
+    if (response.ok) { const data = await response.json(); setTasks(data.tasks || []); }
+  }
+  async function addTask() {
+    if (!taskTitle.trim()) return;
+    const response = await fetch('/api/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: taskTitle.trim() }) });
+    if (response.ok) { setTaskTitle(''); void loadTasks(); }
+  }
+  async function toggleTask(id: string, status: string) {
+    await fetch(`/api/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: status === 'DONE' ? 'OPEN' : 'DONE' }) });
+    void loadTasks();
+  }
 
   useEffect(() => {
     let active = true;
@@ -200,6 +229,9 @@ export default function EntityWorkspace({ slug, seed }: Props) {
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search records" />
         <span className="save-indicator">{saving ? 'Saving...' : 'Saved'}</span>
         <div className="muted">{canManage ? 'Edit mode' : 'Read-only mode'}</div>
+        <button className="button subtle" type="button" onClick={() => void downloadExport('csv')}>Export CSV</button>
+        <button className="button subtle" type="button" onClick={() => void downloadExport('json')}>Export JSON</button>
+        <button className="button subtle" type="button" onClick={() => void loadInsights()}>Record insights</button>
         <button className="button subtle" type="button" onClick={reset} disabled={!canManage}>Reset records</button>
         <button
           className="button primary"
@@ -214,6 +246,31 @@ export default function EntityWorkspace({ slug, seed }: Props) {
         </button>
       </div>
       {error ? <div style={{ color: '#b91c1c', marginTop: 8 }}>{error}</div> : null}
+      {insights ? (
+        <section aria-label="Record insights" style={{ marginTop: 12 }}>
+          <h4>Record insights</h4>
+          <p className="muted">{insights.disclaimer} · aiGenerated: {String(insights.aiGenerated)}</p>
+          {insights.features.map((feature) => (
+            <article key={feature.feature} style={{ marginTop: 10 }}>
+              <h5>{feature.title}</h5>
+              <p>{feature.summary}</p>
+              <dl>{feature.metrics.map((metric) => <div key={metric.label}><dt>{metric.label}</dt><dd>{metric.value}</dd></div>)}</dl>
+              {feature.sections.map((section) => <div key={section.title}><h6>{section.title}</h6><p>{section.detail}</p></div>)}
+              <h6>Suggested actions</h6>
+              <ol>{feature.actions.map((action) => <li key={action}>{action}</li>)}</ol>
+            </article>
+          ))}
+        </section>
+      ) : null}
+      <section aria-label="Follow-up tasks" style={{ marginTop: 12 }}>
+        <h4>Follow-up tasks</h4>
+        <div className="toolbar-row">
+          <input aria-label="New task title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} placeholder="New follow-up task" />
+          <button className="button subtle" type="button" onClick={() => void addTask()}>Add task</button>
+          <button className="button subtle" type="button" onClick={() => void loadTasks()}>Load tasks</button>
+        </div>
+        <ul>{tasks.map((task) => <li key={task.id}>{task.title} — {task.status} <button className="button subtle" type="button" onClick={() => void toggleTask(task.id, task.status)}>{task.status === 'DONE' ? 'Reopen' : 'Mark done'}</button></li>)}</ul>
+      </section>
 
       <div className="table-wrap">
         <table className="data-table">
